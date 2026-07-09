@@ -4,6 +4,11 @@ main.py — Vantage Risk FastAPI application entry point.
 
 import logging
 import os
+
+# Prevent OpenBLAS / OpenMP thread explosion and memory allocation failures on Windows
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
@@ -14,7 +19,7 @@ load_dotenv()
 
 from db import engine
 from middleware.latency import LatencyMiddleware
-from routes import companies, portfolio, scenario, latency, insight
+from routes import companies, portfolio, scenario, latency, insight, stock_data, articles
 
 logging.basicConfig(
     level=logging.INFO,
@@ -49,17 +54,22 @@ app = FastAPI(
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
 ALLOWED_ORIGINS = [
-    "http://localhost:5173",   # Vite dev server
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:4173",
+    "http://127.0.0.1:4173",
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
     os.getenv("FRONTEND_URL", "https://vantage-risk.vercel.app"),
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins     = ALLOWED_ORIGINS,
-    allow_credentials = True,
-    allow_methods     = ["*"],
-    allow_headers     = ["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:[0-9]+)?",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # ── Latency Logging Middleware ────────────────────────────────────────────────
@@ -71,6 +81,8 @@ app.include_router(portfolio.router)
 app.include_router(scenario.router)
 app.include_router(latency.router)
 app.include_router(insight.router)
+app.include_router(stock_data.router)
+app.include_router(articles.router)
 
 
 # ── Health check ─────────────────────────────────────────────────────────────

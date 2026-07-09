@@ -18,18 +18,18 @@ from typing import Optional
 import anthropic
 import numpy as np
 import yfinance as yf
-from sentence_transformers import SentenceTransformer
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
 log = logging.getLogger(__name__)
 
 # ── Model singleton (loaded once on first import) ─────────────────────────────
-_embed_model: Optional[SentenceTransformer] = None
+_embed_model = None
 
-def get_embed_model() -> SentenceTransformer:
+def get_embed_model():
     global _embed_model
     if _embed_model is None:
+        from sentence_transformers import SentenceTransformer
         model_name = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
         log.info(f"Loading embedding model '{model_name}' (first call only)…")
         _embed_model = SentenceTransformer(model_name)

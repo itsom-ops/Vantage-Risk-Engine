@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   getCompanies,
@@ -50,6 +51,7 @@ export function Dashboard() {
   const [loadingCompanies, setLoadingCompanies] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [activePanel, setActivePanel] = useState<ActivePanel>("overview");
+  const navigate = useNavigate();
 
   // Query bar state
   const [query, setQuery] = useState("");
@@ -299,6 +301,13 @@ export function Dashboard() {
                     <p className="text-xs text-stone-600 truncate font-medium">{c.name}</p>
                   </div>
                   <div className="flex-shrink-0 flex items-center gap-1">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); navigate(`/stock/${c.ticker}`); }}
+                      className="text-[9px] px-1.5 py-0.5 rounded bg-electric-500/10 text-electric-500 hover:bg-electric-500/20 transition-colors font-mono font-semibold"
+                      title="Open full stock page"
+                    >
+                      DETAIL
+                    </button>
                     <span className={`
                       text-xs font-mono font-bold
                       ${c.risk_tier === "Low"      ? "text-emerald-400" :
@@ -656,9 +665,12 @@ export function Dashboard() {
                               </div>
 
                               <h4 className="text-xs font-bold text-[#E60000] leading-snug">
-                                <a href={item.link} target="_blank" rel="noopener noreferrer" className="hover:text-cyan-glow hover:underline">
+                                <button
+                                  onClick={() => navigate(`/news/${selected.ticker}/${idx}`, { state: { newsItem: item, companyName: selected.name } })}
+                                  className="hover:text-electric-600 hover:underline text-left cursor-pointer"
+                                >
                                   {item.headline}
-                                </a>
+                                </button>
                               </h4>
 
                               {item.summary && (
@@ -668,14 +680,12 @@ export function Dashboard() {
                               )}
 
                               <div className="flex items-center justify-between pt-1">
-                                <a
-                                  href={item.link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-cyan-glow hover:underline"
+                                <button
+                                  onClick={() => navigate(`/news/${selected.ticker}/${idx}`, { state: { newsItem: item, companyName: selected.name } })}
+                                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-electric-500 hover:underline cursor-pointer"
                                 >
                                   Read Full Article ↗
-                                </a>
+                                </button>
                               </div>
 
                               <div className="p-2.5 rounded bg-black/25 text-[11px] text-slate-400 font-mono leading-relaxed border-l-2 border-cyan-glow/40">

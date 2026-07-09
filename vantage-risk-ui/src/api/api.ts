@@ -151,6 +151,58 @@ export interface RiskMatrixResponse {
   legal_compliance: RiskLeaf[];
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Stock Data Types (Phase 2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface StockQuote {
+  ticker: string;
+  name: string;
+  price: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  market_cap: number | null;
+  pe_ratio: number | null;
+  dividend_yield: number | null;
+  week52_high: number | null;
+  week52_low: number | null;
+  beta: number | null;
+  avg_volume: number | null;
+  day_change: number;
+  day_change_pct: number;
+  currency: string;
+}
+
+export interface PricePoint {
+  timestamp: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export interface PriceHistoryResponse {
+  ticker: string;
+  range: string;
+  points: PricePoint[];
+  currency: string;
+}
+
+export interface ArticleContent {
+  title: string;
+  author: string | null;
+  publish_date: string | null;
+  top_image: string | null;
+  text: string;
+  source_domain: string;
+  word_count: number;
+  success: boolean;
+}
+
 // API calls
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -186,3 +238,16 @@ export const getCompanyNewsCorrelation = (id: string) =>
 
 export const getCompanyRiskMatrix = (id: string) =>
   api.get<RiskMatrixResponse>(`/companies/${id}/risk-matrix`).then((r) => r.data);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 2 — Stock Data & Article Extraction APIs
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const getStockQuote = (ticker: string) =>
+  api.get<StockQuote>(`/stock/${ticker}/quote`).then((r) => r.data);
+
+export const getStockPriceHistory = (ticker: string, range: string = "1m") =>
+  api.get<PriceHistoryResponse>(`/stock/${ticker}/price-history`, { params: { range } }).then((r) => r.data);
+
+export const extractArticle = (url: string) =>
+  api.post<ArticleContent>("/articles/extract", { url }).then((r) => r.data);
